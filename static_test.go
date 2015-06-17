@@ -21,7 +21,8 @@ func TestStatic(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	handler := Static(".", StaticOptions{})(http.HandlerFunc(testHandler))
+	// Just the defaults
+	handler := Static(".")(http.HandlerFunc(testHandler))
 	handler.ServeHTTP(rr, r)
 
 	err = testBody(t, rr, r, testFile)
@@ -33,17 +34,14 @@ func TestStatic(t *testing.T) {
 func TestStaticListDir(t *testing.T) {
 	t.Parallel()
 
-	opts := StaticOptions{
-		ListDir: true,
-	}
-
 	rr := httptest.NewRecorder()
 	r, err := http.NewRequest("GET", "/testdata", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	handler := Static(".", opts)(http.HandlerFunc(testHandler))
+	// Turn directory listings on
+	handler := Static(".", DirList())(http.HandlerFunc(testHandler))
 	handler.ServeHTTP(rr, r)
 
 	if rr.Code != http.StatusOK {
@@ -65,7 +63,7 @@ func TestStaticListFalse(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	handler := Static(".", StaticOptions{})(http.HandlerFunc(testHandler))
+	handler := Static(".")(http.HandlerFunc(testHandler))
 	handler.ServeHTTP(rr, r)
 
 	if rr.Code != http.StatusOK {
@@ -82,7 +80,7 @@ func TestStaticNoFile(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	handler := Static(".", StaticOptions{})(http.HandlerFunc(testHandler))
+	handler := Static(".")(http.HandlerFunc(testHandler))
 	handler.ServeHTTP(rr, r)
 
 	if rr.Code != http.StatusOK {
@@ -93,15 +91,13 @@ func TestStaticNoFile(t *testing.T) {
 func TestServe(t *testing.T) {
 	t.Parallel()
 
-	opts := StaticOptions{NotFoundHandler: http.NotFoundHandler()}
-
 	rr := httptest.NewRecorder()
 	r, err := http.NewRequest("GET", testFile, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	handler := Serve(".", opts)
+	handler := Serve(".")
 	handler.ServeHTTP(rr, r)
 
 	err = testBody(t, rr, r, testFile)

@@ -10,16 +10,16 @@ import (
 type static struct {
 	dir  string
 	h    http.Handler
-	opts StaticOptions
+	opts staticOptions
 }
 
-// StaticOptions sets the options for serving static files using ServeStatic.
-type StaticOptions struct {
+// staticOptions sets the options for serving static files.
+type staticOptions struct {
 	// Turn directory listings on (i.e. show all files in a directory).
-	ListDir bool
+	dirList bool
 	// NotFound is called when using ServeStatic. Defaults to
 	// http.NotFoundHandler if not provided.
-	NotFoundHandler http.Handler
+	notFoundHandler http.Handler
 }
 
 // Satifies http.Handler for static. The Content-Type header is automatically
@@ -35,7 +35,7 @@ func (s static) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Don't show directory listings if the option isn't set.
-	if f.IsDir() && !s.opts.ListDir {
+	if f.IsDir() && !s.opts.dirList {
 		s.h.ServeHTTP(w, r)
 		return
 	}
@@ -44,16 +44,33 @@ func (s static) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, fname)
 }
 
-func ListDir(l bool) func(*static) {
+// DirList turns directory listings 'on' (off by default).
+func DirList() func(*static) {
 	return func(s *static) {
-		s.opts.ListDir = l
+		s.opts.dirList = true
 	}
 }
 
+// NotFoundHandler sets a custom http.Handler to be called when using the Serve
+// handler. Set this to serve 'pretty' HTTP 404 pages or re-directs.
+// elsewhere.
 func NotFoundHandler(h http.Handler) func(*static) {
 	return func(s *static) {
-		s.opts.NotFoundHandler = h
+		s.opts.notFoundHandler = h
 	}
+}
+
+func parse(dir string, h http.Handler, options ...func(*static)) *static {
+	s := &static{
+		dir: dir,
+		h:   h,
+	}
+
+	for _, option := range options {
+		option(s)
+	}
+
+	return s
 }
 
 // Static provides HTTP middleware that serves static assets from the directory
@@ -62,33 +79,19 @@ func NotFoundHandler(h http.Handler) func(*static) {
 // first priority (e.g. favicon.ico, stylesheets, etc.) across an entire router.
 func Static(dir string, options ...func(*static)) func(http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
-		s := &static{
-			dir: dir,
-			h:   h,
-		}
-
-		for _, option := range options {
-			option(s)
-		}
-
-		return s
+		return parse(dir, h, options...)
 	}
 }
 
 // Serve is a handler that serves static files from the directory
-// provided. If the file doesn't exist, it calls opts.NotFound.
+// provided. If the file doesn't exist, it calls the currently configured
+// NotFoundHandler (defaults to http.NotFoundHandler).
 func Serve(dir string, options ...func(*static)) http.Handler {
-	s := &static{
-		dir: dir,
+	s := parse(dir, nil, options...)
+
+	if s.opts.notFoundHandler == nil {
+		s.opts.notFoundHandler = http.NotFoundHandler()
 	}
 
-	for _, option := range options {
-		option(s)
-	}
-
-	if s.opts.NotFoundHandler == nil {
-		s.opts.NotFoundHandler = http.NotFoundHandler()
-	}
-
-	return Static(dir, options...)(s.opts.NotFoundHandler)
+	return s
 }
