@@ -44,22 +44,51 @@ func (s static) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, fname)
 }
 
+func ListDir(l bool) func(*static) {
+	return func(s *static) {
+		s.opts.ListDir = l
+	}
+}
+
+func NotFoundHandler(h http.Handler) func(*static) {
+	return func(s *static) {
+		s.opts.NotFoundHandler = h
+	}
+}
+
 // Static provides HTTP middleware that serves static assets from the directory
 // provided. If the file doesn't exist, it calls the wrapped handler/router.
 // This is useful when you want static files in a directory to be served as a
 // first priority (e.g. favicon.ico, stylesheets, etc.) across an entire router.
-func Static(dir string, opts StaticOptions) func(http.Handler) http.Handler {
+func Static(dir string, options ...func(*static)) func(http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
-		return static{dir, h, opts}
+		s := &static{
+			dir: dir,
+			h:   h,
+		}
+
+		for _, option := range options {
+			option(s)
+		}
+
+		return s
 	}
 }
 
 // Serve is a handler that serves static files from the directory
 // provided. If the file doesn't exist, it calls opts.NotFound.
-func Serve(dir string, opts StaticOptions) http.Handler {
-	if opts.NotFoundHandler == nil {
-		opts.NotFoundHandler = http.NotFoundHandler()
+func Serve(dir string, options ...func(*static)) http.Handler {
+	s := &static{
+		dir: dir,
 	}
 
-	return Static(dir, opts)(opts.NotFoundHandler)
+	for _, option := range options {
+		option(s)
+	}
+
+	if s.opts.NotFoundHandler == nil {
+		s.opts.NotFoundHandler = http.NotFoundHandler()
+	}
+
+	return Static(dir, options...)(s.opts.NotFoundHandler)
 }
