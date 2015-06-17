@@ -29,6 +29,11 @@ import (
 
 func main() {
     r := http.NewServeMux()
+    opts := StaticOptions{
+        // Directory listings are off by default. Let's turn them on.
+        ListDir: true,
+    }
+
     // IndexHandler is just a func(w http.ResponseWriter, r *http.Request) here.
     r.HandleFunc("/", IndexHandler)
     r.Handle("/static/", station.Serve("/Users/matt/Desktop/static",
@@ -51,7 +56,7 @@ import (
 func main() {
     goji.Get("/", IndexHandler)
     goji.Get("/static/*", station.Serve("/Users/matt/Desktop/static",
-    opts))
+    StaticOptions{}))
     goji.Serve()
 }
 ```
@@ -76,7 +81,7 @@ func main() {
     // a path like http://example.com/static/style.css, the middleware will
     // check if that file exists before passing the request off to your router.
     // PS: If you're using Goji, just call goji.Use(station.Static(opts))
-    http.ListenAndServe(":8000", station.Static("/Users/matt/Desktop/static", opts)(r))
+    http.ListenAndServe(":8000", station.Static("/Users/matt/Desktop/static", StaticOptions{})(r))
 }
 ```
 
