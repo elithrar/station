@@ -23,7 +23,6 @@ type cache struct {
 // CacheOptions stores configuration options for cache headers.
 type cacheOptions struct {
 	maxAge         int64
-	expires        time.Time
 	mustRevalidate bool
 }
 
