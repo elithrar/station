@@ -60,7 +60,7 @@ func NotFoundHandler(h http.Handler) func(*static) {
 	}
 }
 
-func parse(dir string, h http.Handler, options ...func(*static)) *static {
+func parseStatic(dir string, h http.Handler, options ...func(*static)) *static {
 	s := &static{
 		dir: dir,
 		h:   h,
@@ -79,7 +79,7 @@ func parse(dir string, h http.Handler, options ...func(*static)) *static {
 // first priority (e.g. favicon.ico, stylesheets, etc.) across an entire router.
 func Static(dir string, options ...func(*static)) func(http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
-		return parse(dir, h, options...)
+		return parseStatic(dir, h, options...)
 	}
 }
 
@@ -87,11 +87,15 @@ func Static(dir string, options ...func(*static)) func(http.Handler) http.Handle
 // provided. If the file doesn't exist, it calls the currently configured
 // NotFoundHandler (defaults to http.NotFoundHandler).
 func Serve(dir string, options ...func(*static)) http.Handler {
-	s := parse(dir, nil, options...)
+	s := parseStatic(dir, nil, options...)
 
+	// Use the built-in HTTP 404 Not Found handler from net/http if unset
 	if s.opts.notFoundHandler == nil {
 		s.opts.notFoundHandler = http.NotFoundHandler()
 	}
+	// We call the notFoundHandler as the wrapped handler when not operating
+	// as middleware.
+	s.h = s.opts.notFoundHandler
 
 	return s
 }
