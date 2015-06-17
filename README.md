@@ -13,7 +13,9 @@ actually) and set HTTP caching headers on any routes or routers you need to.
 
 See below for a full set of examples.
 
-## Examples: Static File Serving
+## Examples
+
+### Static File Serving
 
 *station* can be used with Go's [net/http](http://golang.org/pkg/net/http/)
 package, with the [Goji micro-framework](https://github.com/zenazn/goji) or with
@@ -85,7 +87,7 @@ func main() {
 }
 ```
 
-## Examples: Caching Middleware
+### Caching Middleware
 
 Using `station.Cache` is also pretty easy:
 
