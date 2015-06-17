@@ -13,7 +13,7 @@ const (
 	pragma            = "Pragma"
 )
 
-var month = int64(86400 * 30)
+var week = int64(86400 * 7)
 
 type cache struct {
 	h    http.Handler
@@ -22,8 +22,7 @@ type cache struct {
 
 // CacheOptions stores configuration options for cache headers.
 type cacheOptions struct {
-	maxAge         int64
-	mustRevalidate bool
+	maxAge int64
 }
 
 // Satisfies the http.Handler interface for cache. Behaviour is defined as per
@@ -53,15 +52,6 @@ func MaxAge(age int64) func(*cache) {
 	}
 }
 
-// MustRevalidate sets the 'must-revalidate' Cache-Control parameter to request
-// that the client check the If-Modified-Since, Last-Modified or ETag headers
-// before serving a cached file to the user. Defaults to false, but is recommended.
-func MustRevalidate() func(*cache) {
-	return func(c *cache) {
-		c.opts.mustRevalidate = true
-	}
-}
-
 func parseCache(h http.Handler, options ...func(*cache)) *cache {
 	c := &cache{h: h}
 
@@ -79,9 +69,9 @@ func Cache(options ...func(*cache)) func(http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		c := parseCache(h, options...)
 
-		// Default cache duration is one month
+		// Default cache duration is one week
 		if c.opts.maxAge == 0 {
-			c.opts.maxAge = month
+			c.opts.maxAge = week
 		}
 
 		return c

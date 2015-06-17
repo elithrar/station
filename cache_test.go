@@ -21,7 +21,7 @@ func TestCache(t *testing.T) {
 	handler.ServeHTTP(rr, r)
 
 	if rr.Header().Get(cacheControl) != fmt.Sprintf("%s%d", cacheControlValue,
-		month) {
+		week) {
 		t.Fatalf("Cache-Control header not set correctly.")
 	}
 
@@ -48,7 +48,7 @@ func TestCacheExpires(t *testing.T) {
 	handler := Cache()(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
 	handler.ServeHTTP(rr, r)
 
-	if rr.Header().Get(expires) != time.Now().Add(time.Duration(month)).Format(time.RFC1123) {
+	if rr.Header().Get(expires) != time.Now().Add(time.Duration(week)).Format(time.RFC1123) {
 		t.Fatalf("Expires header invalid: got %v", rr.Header().Get(expires))
 	}
 }
