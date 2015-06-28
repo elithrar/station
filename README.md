@@ -1,5 +1,5 @@
-# station [![GoDoc](https://godoc.org/github.com/elithrar/station?status.svg)](https://godoc.org/github.com/elithrar/station) [![Build Status](https://travis-ci.org/elithrar/station.svg)](https://travis-ci.org/elithrar/station)
-
+# station
+[![GoDoc](https://godoc.org/github.com/elithrar/station?status.svg)](https://godoc.org/github.com/elithrar/station) [![Build Status](https://semaphoreci.com/api/v1/projects/26ef1648-9f58-4b5d-862d-b2e014bee8e6/468330/badge.svg)](https://semaphoreci.com/elithrar/station)      
 station provides simple static file serving & caching middleware for Go HTTP
 applications. It makes it easy to turn off directory listings (off by default,
 actually) and set HTTP caching headers on any routes or routers you need to.
@@ -18,7 +18,7 @@ See below for a full set of examples.
 ### Static File Serving
 
 *station* can be used with Go's [net/http](http://golang.org/pkg/net/http/)
-package, with the [Goji micro-framework](https://github.com/zenazn/goji) or with
+package, with the [Goji micro-framework](https://github.com/zenazn/goji) and with
 [gorilla/mux](http://www.gorillatoolkit.org/pkg/mux).
 
 Here's an example of using it with plain old `net/http`:
