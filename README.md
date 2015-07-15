@@ -1,5 +1,6 @@
 # station
-[![GoDoc](https://godoc.org/github.com/elithrar/station?status.svg)](https://godoc.org/github.com/elithrar/station) [![Build Status](https://semaphoreci.com/api/v1/projects/26ef1648-9f58-4b5d-862d-b2e014bee8e6/468330/badge.svg)](https://semaphoreci.com/elithrar/station)      
+[![GoDoc](https://godoc.org/github.com/elithrar/station?status.svg)](https://godoc.org/github.com/elithrar/station) [![Build Status](https://travis-ci.org/elithrar/station.svg?branch=master)](https://travis-ci.org/elithrar/station)
+
 station provides simple static file serving & caching middleware for Go HTTP
 applications. It makes it easy to turn off directory listings (off by default,
 actually) and set HTTP caching headers on any routes or routers you need to.
