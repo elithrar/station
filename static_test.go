@@ -109,7 +109,7 @@ func TestServe(t *testing.T) {
 func testBody(t *testing.T, rr *httptest.ResponseRecorder, r *http.Request,
 	fname string) error {
 	if rr.Code != http.StatusOK {
-		fmt.Errorf("was not able to serve static file at %v", r.URL)
+		return fmt.Errorf("was not able to serve static file at %v", r.URL)
 	}
 
 	file, err := ioutil.ReadFile(fname)
