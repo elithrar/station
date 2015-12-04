@@ -20,6 +20,9 @@ type cache struct {
 	opts cacheOptions
 }
 
+// CacheOption represents an option for configuring the Cache handler.
+type CacheOption func(*cache)
+
 // CacheOptions stores configuration options for cache headers.
 type cacheOptions struct {
 	maxAge int64
@@ -46,13 +49,13 @@ func (c cache) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 // MaxAge sets the duration to cache objects for in seconds.
-func MaxAge(age int64) func(*cache) {
+func MaxAge(age int64) CacheOption {
 	return func(c *cache) {
 		c.opts.maxAge = age
 	}
 }
 
-func parseCache(h http.Handler, options ...func(*cache)) *cache {
+func parseCache(h http.Handler, options ...CacheOption) *cache {
 	c := &cache{h: h}
 
 	for _, option := range options {
@@ -65,7 +68,7 @@ func parseCache(h http.Handler, options ...func(*cache)) *cache {
 // Cache provides HTTP middleware for setting client-side caching headers for
 // HTTP resources. These headers are commonly used to set far-future dates for
 // static assets to minimise additional HTTP requests on repeat visits.
-func Cache(options ...func(*cache)) func(http.Handler) http.Handler {
+func Cache(options ...CacheOption) func(http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		c := parseCache(h, options...)
 

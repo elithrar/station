@@ -22,6 +22,10 @@ type staticOptions struct {
 	notFoundHandler http.Handler
 }
 
+// StaticOption represents an option for configuring the Static and Server
+// handlers.
+type StaticOption func(*static)
+
 // Satifies http.Handler for static. The Content-Type header is automatically
 // set by http.ServeFile based on Go's content type detection.
 func (s static) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -45,7 +49,7 @@ func (s static) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 // DirList turns directory listings 'on' (off by default).
-func DirList() func(*static) {
+func DirList() StaticOption {
 	return func(s *static) {
 		s.opts.dirList = true
 	}
@@ -54,13 +58,13 @@ func DirList() func(*static) {
 // NotFoundHandler sets a custom http.Handler to be called when using the Serve
 // handler. Set this to serve 'pretty' HTTP 404 pages or re-directs.
 // elsewhere.
-func NotFoundHandler(h http.Handler) func(*static) {
+func NotFoundHandler(h http.Handler) StaticOption {
 	return func(s *static) {
 		s.opts.notFoundHandler = h
 	}
 }
 
-func parseStatic(dir string, h http.Handler, options ...func(*static)) *static {
+func parseStatic(dir string, h http.Handler, options ...StaticOption) *static {
 	s := &static{
 		dir: dir,
 		h:   h,
@@ -77,7 +81,7 @@ func parseStatic(dir string, h http.Handler, options ...func(*static)) *static {
 // provided. If the file doesn't exist, it calls the wrapped handler/router.
 // This is useful when you want static files in a directory to be served as a
 // first priority (e.g. favicon.ico, stylesheets, etc.) across an entire router.
-func Static(dir string, options ...func(*static)) func(http.Handler) http.Handler {
+func Static(dir string, options ...StaticOption) func(http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		return parseStatic(dir, h, options...)
 	}
@@ -86,7 +90,7 @@ func Static(dir string, options ...func(*static)) func(http.Handler) http.Handle
 // Serve is a handler that serves static files from the directory
 // provided. If the file doesn't exist, it calls the currently configured
 // NotFoundHandler (defaults to http.NotFoundHandler).
-func Serve(dir string, options ...func(*static)) http.Handler {
+func Serve(dir string, options ...StaticOption) http.Handler {
 	s := parseStatic(dir, nil, options...)
 
 	// Use the built-in HTTP 404 Not Found handler from net/http if unset
